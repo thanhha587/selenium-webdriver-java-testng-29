@@ -28,6 +28,8 @@ public class Check_Environment {
         driver.manage().window().maximize();
         driver.get("https://www.facebook.com/");
 
+
+        driver.manage().window().maximize();
         driver.manage().window().maximize();
     }
 
