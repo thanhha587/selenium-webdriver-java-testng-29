@@ -116,13 +116,33 @@ public class Topic_06_WebBrowser_Commands_01 {
     driver.manage().window().setPosition(new Point(605,533));// Set cái điểm cao nhất bên trái của Webbrowser
 
     driver.navigate().back();
-        driver.navigate().refresh();
-        driver.navigate().forward();
-        driver.navigate().to("https://www.facebook.com/");
-        driver.navigate().to(new URL("https://www.facebook.com/"));
+    driver.navigate().refresh();
+    driver.navigate().forward();
+    driver.navigate().to("https://www.facebook.com/");
+    driver.navigate().to(new URL("https://www.facebook.com/"));
+
+    //Alert Window/Frame/ (iFrame)
+    driver.switchTo().alert().accept();
+    driver.switchTo().alert().dismiss();
+    driver.switchTo().alert().getText();
+    driver.switchTo().alert().sendKeys("Test");
+
+    //Lấy ra ID / cửa sổ hiện tại
+    String homePageWindowID = driver.getWindowHandle();
+    driver.switchTo().window(homePageWindowID);
 
 
-    driver.switchTo();
+
+    //Switch/ Handle  Frame/ iFrame
+    driver.switchTo().frame(0);
+    driver.switchTo().frame("34948853");
+    driver.switchTo().frame(driver.findElement(By.id("")));
+
+    //Switch về HTML chứa Frame trước đó
+    driver.switchTo().defaultContent();
+
+    //Từ Frame trong đi ra frame ngoài
+    driver.switchTo().parentFrame();
 
 
 
