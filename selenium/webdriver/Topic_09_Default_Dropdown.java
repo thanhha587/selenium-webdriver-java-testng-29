@@ -89,7 +89,7 @@ System.out.println(driver.findElement(By.cssSelector("input#FirstName")).getAttr
         Assert.assertEquals(new Select(driver.findElement(By.name("DateOfBirthYear"))).getFirstSelectedOption().getText(),"1987");
         System.out.println("Verify correct account");
     }
-    
+
     @AfterClass
     public void afterClass() {
        // driver.quit();

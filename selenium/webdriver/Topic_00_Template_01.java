@@ -21,17 +21,17 @@ public class Topic_00_Template_01 {
     }
 
     @Test
-    public void TC_01_Url() {
+    public void TC_01_() {
 
     }
 
     @Test
-    public void TC_02_Logo() {
+    public void TC_02_() {
 
     }
 
     @Test
-    public void TC_03_Form() {
+    public void TC_03_() {
 
     }
     @AfterClass
