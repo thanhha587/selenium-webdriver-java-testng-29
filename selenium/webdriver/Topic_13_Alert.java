@@ -1,8 +1,13 @@
 package webdriver;
 
+import org.apache.commons.codec.binary.Base64;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.HasDevTools;
+import org.openqa.selenium.devtools.v85.network.Network;
+import org.openqa.selenium.devtools.v85.network.model.Headers;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -12,6 +17,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 
@@ -67,11 +75,65 @@ public class Topic_13_Alert {
         // Chrome DevTool Protocol (CDP) Chrome / Edge Chromium
 
         //Cách 1
-        driver.get("http://admin:admin@the-internet.herokuapp.com/basic_auth");
+        //driver.get("http://admin:admin@the-internet.herokuapp.com/basic_auth");
+        //Assert.assertTrue(driver.findElement(By.xpath("//p[contains(text(),'Congratulations! You must have the proper credentials.')]")).isDisplayed());
+
+        //Cách 1 khác
+        String username= "admin";
+        String password = "admin";
+//        driver.get("http://"+ username +":" + password +"@the-internet.herokuapp.com/basic_auth");
+//        Assert.assertTrue(driver.findElement(By.xpath("//p[contains(text(),'Congratulations! You must have the proper credentials.')]")).isDisplayed());
+
+        //Cách 2
+//        driver.get("http://the-internet.herokuapp.com");
+//        String authenLink = driver.findElement(By.xpath("//a[text()= 'Basic Auth']")).getAttribute("href");
+//        System.out.println(authenLink);//http://the-internet.herokuapp.com/basic_auth
+//        String[] authenArray = authenLink.split("//");
+//        System.out.println(authenArray[0]);
+//        System.out.println(authenArray[1]);
+//        driver.get(authenArray[0] + "//" + username +":"+ password + "@" + authenArray[1]);
+//        Assert.assertTrue(driver.findElement(By.xpath("//p[contains(text(),'Congratulations! You must have the proper credentials.')]")).isDisplayed());
+
+        //Cách khác theo hàm
+        driver.get("http://the-internet.herokuapp.com");
+        String authenLink = driver.findElement(By.xpath("//a[text()= 'Basic Auth']")).getAttribute("href");
+        driver.get(getAuthenAlertByURL(authenLink,username,password));
+        Assert.assertTrue(driver.findElement(By.xpath("//p[contains(text(),'Congratulations! You must have the proper credentials.')]")).isDisplayed());
+
+    }
+
+    @Test
+    public void TC_05_Authentication_Alert_Selenium4x() {
+        //Cách 3
+        // Thư viện Alert k dùng cho authentication được
+        // Chrome DevTool Protocol (CDP) Chrome / Edge Chromium
+        // Cốc cốc/ Opera (Chromium) Work Around
+
+        // Get DevTool object
+        DevTools devTools = ((HasDevTools) driver).getDevTools();
+
+        // Start new session
+        devTools.createSession();
+
+        // Enable the Network domain of devtools
+        devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+
+        // Encode username/ password
+        Map<String, Object> headers = new HashMap<String, Object>();
+        String basicAuthen = "Basic " + new String(new Base64().encode(String.format("%s:%s", "admin", "admin").getBytes()));
+        headers.put("Authorization", basicAuthen);
+
+        // Set to Header
+        devTools.send(Network.setExtraHTTPHeaders(new Headers(headers)));
+
+        driver.get("https://the-internet.herokuapp.com/basic_auth");
+
         Assert.assertTrue(driver.findElement(By.xpath("//p[contains(text(),'Congratulations! You must have the proper credentials.')]")).isDisplayed());
 
 
+
     }
+
     @AfterClass
     public void afterClass() {
         driver.quit();
@@ -83,6 +145,10 @@ public class Topic_13_Alert {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+    public String getAuthenAlertByURL(String url, String username, String password) {
+        String[] authenArray = url.split("//");
+        return authenArray[0] + "//" + username + ":" + password + "@" + authenArray[1];
     }
 }
 
