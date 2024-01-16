@@ -3,11 +3,14 @@ package webdriver;
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.Color;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -16,11 +19,14 @@ import java.util.concurrent.TimeUnit;
 public class Topic_14_Actions {
     WebDriver driver;
     Actions actions;
+    JavascriptExecutor javascriptExecutor;
 
     @BeforeClass
     public void beforeClass() {
         driver = new FirefoxDriver();
         actions = new Actions(driver);
+
+        javascriptExecutor = (JavascriptExecutor) driver;
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
         driver.manage().window().maximize();
 
@@ -239,6 +245,117 @@ public class Topic_14_Actions {
         List<WebElement> allNumbersSelected = driver.findElements(By.cssSelector("li.ui-state-default.ui-selected"));
         Assert.assertEquals(allNumbersSelected.size(),Num);
 
+    }
+
+    @Test
+    public void TC_05_DoubleClick() {
+        driver.get("https://automationfc.github.io/basic-form/index.html");
+
+        WebElement doubleClickButton = driver.findElement(By.xpath("//button[text()='Double click me']"));
+
+        //Cần scroll tới element rồi mới double Clicj - chỉ riêng Firẽo mới scroll
+        if (driver.toString().contains("firefox")) {
+            //scrollIntoView(true) : kéo mép trên của element lên phía trên của viewport
+            //scrollIntoView(false) : kéo mép dưới của element xuống phía dưới của viewport
+            javascriptExecutor.executeScript("arguments[0].scrollIntoView(false);", doubleClickButton);
+            SleepInSecond(3);
+        }
+//        else {
+//            actions.scrollToElement(doubleClickButton).perform();
+//            SleepInSecond(1);
+//        }
+        //Double click
+        actions.doubleClick(doubleClickButton).perform();
+        SleepInSecond(1);
+
+        Assert.assertEquals(driver.findElement(By.cssSelector("p#demo")).getText(),"Hello Automation Guys!");
+        }
+
+    @Test
+    public void TC_06_RightClick(){
+          driver.get("http://swisnl.github.io/jQuery-contextMenu/demo.html");
+          driver.findElement(By.xpath("//span[text()='right click me']"));
+          actions.contextClick(driver.findElement(By.xpath("//span[text()='right click me']"))).perform();
+          SleepInSecond(2);
+          //Kiểm tra các element hiển thị sau khi Right click
+          Assert.assertTrue(driver.findElement(By.cssSelector("li.context-menu-icon-edit")).isDisplayed());
+          //hoover vào Quit
+          actions.moveToElement(driver.findElement(By.cssSelector("li.context-menu-icon-quit"))).perform();
+          SleepInSecond(2);
+          //Kiểm tra đã hoover vào Quit thành công
+          Assert.assertTrue(driver.findElement(By.cssSelector("li.context-menu-icon-quit.context-menu-visible.context-menu-hover")).isDisplayed());
+          //Click vào Quit
+          driver.findElement(By.cssSelector("li.context-menu-icon-quit.context-menu-visible.context-menu-hover")).click();
+          SleepInSecond(2);
+          //Chọn accept cho alert
+          driver.switchTo().alert().accept();
+          SleepInSecond(2);//phải có chờ này nếu k cái Assert tiếp k có tác dụng vì chưa kịp biến mất
+          //Các element k còn hiển thị
+          Assert.assertFalse(driver.findElement(By.cssSelector("li.context-menu-icon-edit")).isDisplayed());
+          SleepInSecond(2);
+    }
+
+    @Test
+    public void TC_07_DragDropHTML4(){
+        driver.get("https://automationfc.github.io/kendo-drag-drop/");
+
+        WebElement smallCircle = driver.findElement(By.cssSelector("div#draggable"));
+        WebElement bigCircle = driver.findElement(By.cssSelector("div#droptarget"));
+
+        actions.dragAndDrop(smallCircle,bigCircle).perform();
+        SleepInSecond(1);
+
+        //Kiểm tra đã drop thành công
+        Assert.assertEquals(bigCircle.getText(),"You did great!");
+        System.out.println("màu vòng tròn to là: " + Color.fromString(bigCircle.getCssValue("background-color")).asHex().toLowerCase());
+        System.out.println("màu vòng tròn nhỏ là: " + smallCircle.getCssValue("background-color"));
+        Assert.assertEquals(Color.fromString(bigCircle.getCssValue("background-color")).asHex().toLowerCase(),"#03a9f4");
+    }
+    @Test
+    public void TC_08_DragDropHTML5_CSS() throws IOException{
+        driver.get("https://automationfc.github.io/drag-drop-html5/");
+        SleepInSecond(2);
+
+//        WebElement columnA = driver.findElement(By.cssSelector("div#column-a"));
+//        WebElement columnB = driver.findElement(By.cssSelector("div#column-b"));
+
+        String projectPath = System.getProperty("user.dir");
+        String dragAndDropFilePath = projectPath + "/dragAndDrop/drag_and_drop_helper.js";
+        System.out.println("link file:" + dragAndDropFilePath);
+
+        String jsContentFile = getContentFile(dragAndDropFilePath);
+
+        //Thực thi đoạn lệnh JS
+        javascriptExecutor.executeScript(jsContentFile);
+        System.out.println("hiển thị1");
+        SleepInSecond(3);
+
+
+
+
+    }
+    @Test
+    public void TC_09_DragDropHTML5_Xpath(){
+
+    }
+
+
+    public String getContentFile(String filePath) throws IOException {
+        Charset cs = Charset.forName("UTF-8");
+        FileInputStream stream = new FileInputStream(filePath);
+        try {
+            Reader reader = new BufferedReader(new InputStreamReader(stream, cs));
+            StringBuilder builder = new StringBuilder();
+            System.out.println("hiển thị2");
+            char[] buffer = new char[8192];
+            int read;
+            while ((read = reader.read(buffer, 0, buffer.length)) > 0) {
+                builder.append(buffer, 0, read);
+            }
+            return builder.toString();
+        } finally {
+            stream.close();
+        }
     }
     @AfterClass
     public void afterClass() {
